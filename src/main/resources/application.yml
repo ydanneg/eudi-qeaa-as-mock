@@ -1,0 +1,52 @@
+server:
+  port: 12443
+  error:
+    include-stacktrace: on_param
+  ssl:
+    protocol: TLS
+    enabled-protocols: TLSv1.3
+    bundle: eudi-as
+
+spring:
+  application:
+    name: eudi-as-mock
+  ssl:
+    bundle:
+      pem:
+        eudi-as:
+          key:
+            alias: eudi-as.localhost
+          keystore:
+            certificate: classpath:eudi-as.localhost.crt
+            private-key: classpath:eudi-as.localhost.key
+          truststore:
+            certificate: classpath:eudi-ca.localhost.crt
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:eudi-as
+    username: sa
+    password:
+  main:
+    banner-mode: off
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: configprops,env,health,info
+  info:
+    git:
+      mode: full
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+eudi:
+  as:
+    base-url: https://eudi-as.localhost:12443
