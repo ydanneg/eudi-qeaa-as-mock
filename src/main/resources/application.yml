@@ -21,6 +21,12 @@ spring:
             private-key: classpath:eudi-as.localhost.key
           truststore:
             certificate: classpath:eudi-ca.localhost.crt
+        eudi-wallet:
+          truststore:
+            certificate: classpath:eudi-wallet.localhost.crt
+        eudi-wallet-provider:
+          truststore:
+            certificate: classpath:eudi-wallet-provider.localhost.crt
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:eudi-as
@@ -52,3 +58,5 @@ management:
 eudi:
   as:
     base-url: https://eudi-as.localhost:12443
+  ttl:
+    request-uri: 60s
