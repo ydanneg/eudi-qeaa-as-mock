@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface SessionRepository extends JpaRepository<Session, Long> {
 
     Optional<Session> findByClientIdAndRequestUriAndRequestUriUsed(String clientId, String requestUri, boolean requestUriUsed);
+
+    Optional<Session> findByClientIdAndAuthorizationCodeAndAuthorizationCodeUsedAndRedirectUri(String clientId, String authorizationCode, boolean authorizationCodeUsed, String redirectUri);
 }

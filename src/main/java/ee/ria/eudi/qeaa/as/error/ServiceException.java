@@ -12,6 +12,11 @@ public class ServiceException extends RuntimeException {
         this(ErrorCode.INVALID_REQUEST, message);
     }
 
+    public ServiceException(String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = ErrorCode.INVALID_REQUEST;
+    }
+
     public ServiceException(Throwable cause) {
         super(cause);
         this.errorCode = ErrorCode.SERVICE_EXCEPTION;

@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
     SERVICE_EXCEPTION(500),
     INVALID_REQUEST(400),
-    INVALID_GRANT(400);
+    INVALID_GRANT(400),
+    INVALID_DPOP_PROOF(400);
 
     private final int httpStatusCode;
 }
