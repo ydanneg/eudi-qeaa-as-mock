@@ -14,9 +14,11 @@ import com.nimbusds.oauth2.sdk.id.JWTID;
 import ee.ria.eudi.qeaa.as.configuration.properties.AuthorizationServerProperties;
 import ee.ria.eudi.qeaa.as.error.ServiceException;
 import ee.ria.eudi.qeaa.as.model.AuthorizationDetails;
+import ee.ria.eudi.qeaa.as.model.CredentialNonce;
 import ee.ria.eudi.qeaa.as.model.Session;
 import ee.ria.eudi.qeaa.as.model.TokenResponse;
 import ee.ria.eudi.qeaa.as.repository.SessionRepository;
+import ee.ria.eudi.qeaa.as.service.CredentialNonceService;
 import ee.ria.eudi.qeaa.as.validation.ClientAttestationValidator;
 import ee.ria.eudi.qeaa.as.validation.DPoPValidator;
 import ee.ria.eudi.qeaa.as.validation.PKCEValidator;
@@ -33,10 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.text.ParseException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 @Validated
 @RestController
@@ -53,6 +53,7 @@ public class TokenController {
     private final SessionRepository sessionRepository;
     private final ECDSASigner asSigner;
     private final JWSAlgorithm asSigningKeyJwsAlg;
+    private final CredentialNonceService credentialNonceService;
 
     @PostMapping(path = TOKEN_REQUEST_MAPPING)
     public ResponseEntity<TokenResponse> tokenRequest(@RequestHeader("DPoP") String dPoPHeader,
@@ -68,11 +69,15 @@ public class TokenController {
         String audience = properties.as().baseUrl() + TOKEN_REQUEST_MAPPING;
         clientAttestationValidator.validate(clientAssertion, audience);
         SignedJWT dPoPJwt = dPoPValidator.validate(dPoPHeader, clientId);
-        SignedJWT accessToken = getSenderConstrainedAccessToken(clientId, dPoPJwt, session);
+        AuthorizationDetails authorizationDetails = session.getAuthorizationDetails().getFirst();
+        String credentialIssuerId = authorizationDetails.getLocations().getFirst();
+        SignedJWT accessToken = getSenderConstrainedAccessToken(clientId, dPoPJwt, credentialIssuerId);
+        CredentialNonce credentialNonce = credentialNonceService.requestNonce(credentialIssuerId, accessToken); // TODO: Request nonce only if nonce endpoint url in issuer metadata
         TokenResponse response = new TokenResponse(accessToken.serialize(),
             "DPoP",
-            UUID.randomUUID().toString(),
-            Duration.ofDays(365).toSeconds());
+            credentialNonce.cNonce(),
+            credentialNonce.cNonceExpiresIn(),
+            authorizationDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -84,10 +89,8 @@ public class TokenController {
         return session;
     }
 
-    private SignedJWT getSenderConstrainedAccessToken(String clientId, SignedJWT dPoPJwt, Session session) throws JOSEException {
+    private SignedJWT getSenderConstrainedAccessToken(String clientId, SignedJWT dPoPJwt, String credentialIssuerId) throws JOSEException {
         JWK dPoPKey = dPoPJwt.getHeader().getJWK();
-        AuthorizationDetails authorizationDetails = session.getAuthorizationDetails().getFirst();
-        String credentialIssuerId = authorizationDetails.getLocations().getFirst();
         SignedJWT accessToken = new SignedJWT(new JWSHeader.Builder(asSigningKeyJwsAlg)
             .type(JOSEObjectType.JWT)
             .build(), getAccessTokenClaims(clientId, credentialIssuerId, dPoPKey));
