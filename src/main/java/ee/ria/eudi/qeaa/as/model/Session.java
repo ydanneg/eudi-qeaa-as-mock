@@ -1,11 +1,15 @@
 package ee.ria.eudi.qeaa.as.model;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import ee.ria.eudi.qeaa.as.model.vp.PresentationRequest;
+import ee.ria.eudi.qeaa.as.model.vp.PresentationResponse;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +41,11 @@ public class Session {
     private boolean authorizationCodeUsed;
     @ElementCollection
     private List<AuthorizationDetails> authorizationDetails;
+    @OneToOne(cascade = CascadeType.ALL)
+    private PresentationRequest presentationRequest;
+    @OneToOne(cascade = CascadeType.ALL)
+    private PresentationResponse presentationResponse;
+    private String subject;
 
     @Builder
     public Session(URI requestUri, Instant requestUriExpirationTime, JWTClaimsSet requestObjectClaims) throws ParseException {

@@ -20,8 +20,6 @@ public record AuthorizationServerProperties(
         @NotBlank
         @Pattern(regexp = ".*(?<!/)$")
         String baseUrl,
-        @NotBlank
-        String subject,
         @NotNull
         @DurationMin(seconds = 1)
         @DurationMax(seconds = 120)

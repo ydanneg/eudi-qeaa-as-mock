@@ -71,7 +71,8 @@ public class TokenController {
         SignedJWT dPoPJwt = dPoPValidator.validate(dPoPHeader, clientId);
         AuthorizationDetails authorizationDetails = session.getAuthorizationDetails().getFirst();
         String credentialIssuerId = authorizationDetails.getLocations().getFirst();
-        SignedJWT accessToken = getSenderConstrainedAccessToken(clientId, dPoPJwt, credentialIssuerId);
+
+        SignedJWT accessToken = getSenderConstrainedAccessToken(session.getSubject(), clientId, dPoPJwt, credentialIssuerId);
         CredentialNonce credentialNonce = credentialNonceService.requestNonce(credentialIssuerId, accessToken); // TODO: Request nonce only if nonce endpoint url in issuer metadata
         TokenResponse response = new TokenResponse(accessToken.serialize(),
             "DPoP",
@@ -89,22 +90,22 @@ public class TokenController {
         return session;
     }
 
-    private SignedJWT getSenderConstrainedAccessToken(String clientId, SignedJWT dPoPJwt, String credentialIssuerId) throws JOSEException {
+    private SignedJWT getSenderConstrainedAccessToken(String subject, String clientId, SignedJWT dPoPJwt, String credentialIssuerId) throws JOSEException {
         JWK dPoPKey = dPoPJwt.getHeader().getJWK();
         SignedJWT accessToken = new SignedJWT(new JWSHeader.Builder(asSigningKeyJwsAlg)
             .type(JOSEObjectType.JWT)
-            .build(), getAccessTokenClaims(clientId, credentialIssuerId, dPoPKey));
+            .build(), getAccessTokenClaims(subject, clientId, credentialIssuerId, dPoPKey));
         accessToken.sign(asSigner);
         return accessToken;
     }
 
-    private JWTClaimsSet getAccessTokenClaims(String clientId, String audience, JWK dPoPKey) throws JOSEException {
+    private JWTClaimsSet getAccessTokenClaims(String subject, String clientId, String audience, JWK dPoPKey) throws JOSEException {
         JWTID jti = new JWTID(40);
         long issuedAtClaim = Instant.now().getEpochSecond();
         long expClaim = issuedAtClaim + properties.as().ttl().accessToken().toSeconds();
         return new JWTClaimsSet.Builder()
             .claim(JWTClaimNames.ISSUER, properties.as().baseUrl())
-            .claim(JWTClaimNames.SUBJECT, properties.as().subject()) // TODO: From PID authentication flow
+            .claim(JWTClaimNames.SUBJECT, subject)
             .claim(JWTClaimNames.AUDIENCE, audience)
             .claim(JWTClaimNames.JWT_ID, jti.getValue())
             .claim(JWTClaimNames.ISSUED_AT, issuedAtClaim)
