@@ -6,7 +6,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -32,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Map;
@@ -63,7 +60,7 @@ public class TokenController {
                                                       @RequestParam(name = "code_verifier") String codeVerifier,
                                                       @RequestParam(name = "client_assertion_type") @Pattern(regexp = REQUIRED_CLIENT_ASSERTION_TYPE) String clientAssertionType,
                                                       @RequestParam(name = "client_assertion") @Pattern(regexp = REQUIRED_CLIENT_ASSERTION_FORMAT) String clientAssertion,
-                                                      @RequestParam(name = "redirect_uri") String redirectUri) throws BadJOSEException, ParseException, JOSEException, CertificateNotYetValidException, CertificateExpiredException {
+                                                      @RequestParam(name = "redirect_uri") String redirectUri) throws ParseException, JOSEException {
         Session session = updateSession(clientId, authorizationCode, redirectUri);
         pkceValidator.validate(codeVerifier, session);
         String audience = properties.as().baseUrl() + TOKEN_REQUEST_MAPPING;

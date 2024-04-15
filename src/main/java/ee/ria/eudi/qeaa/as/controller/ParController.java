@@ -1,7 +1,5 @@
 package ee.ria.eudi.qeaa.as.controller;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.id.State;
@@ -22,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.text.ParseException;
 import java.time.Instant;
 
@@ -42,9 +38,9 @@ public class ParController {
     @PostMapping(path = PAR_REQUEST_MAPPING, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ParResponse> par(@RequestParam(name = "request") String request,
                                            @RequestParam(name = "client_assertion_type") @Pattern(regexp = REQUIRED_CLIENT_ASSERTION_TYPE) String clientAssertionType,
-                                           @RequestParam(name = "client_assertion") @Pattern(regexp = REQUIRED_CLIENT_ASSERTION_FORMAT) String clientAssertion) throws ParseException, JOSEException, BadJOSEException, CertificateNotYetValidException, CertificateExpiredException {
+                                           @RequestParam(name = "client_assertion") @Pattern(regexp = REQUIRED_CLIENT_ASSERTION_FORMAT) String clientAssertion) throws ParseException {
         String audience = asProperties.baseUrl() + PAR_REQUEST_MAPPING;
-        Pair<SignedJWT, SignedJWT>  clientAttestationAndPoP = clientAttestationValidator.validate(clientAssertion, audience);
+        Pair<SignedJWT, SignedJWT> clientAttestationAndPoP = clientAttestationValidator.validate(clientAssertion, audience);
         JWTClaimsSet requestObjectClaimsSet = authorizationRequestValidator.validate(request, clientAttestationAndPoP.getLeft());
 
         URI requestUri = URI.create(REQUEST_URI_PREFIX + new State().getValue());
