@@ -13,10 +13,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MetadataController {
     public static final String WELL_KNOWN_OPENID_CONFIGURATION_REQUEST_MAPPING = "/.well-known/openid-configuration";
+    public static final String WELL_KNOWN_OAUTH_CONFIGURATION_REQUEST_MAPPING = "/.well-known/oauth-authorization-server";
     public static final String WELL_KNOWN_JWKS_REQUEST_MAPPING = "/.well-known/jwks.json";
     private final MetadataService metadataService;
 
-    @GetMapping(path = WELL_KNOWN_OPENID_CONFIGURATION_REQUEST_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = { WELL_KNOWN_OAUTH_CONFIGURATION_REQUEST_MAPPING, WELL_KNOWN_OPENID_CONFIGURATION_REQUEST_MAPPING }, produces = MediaType.APPLICATION_JSON_VALUE)
     public AuthorizationServerMetadata getMetadata() {
         return metadataService.getMetadata();
     }
