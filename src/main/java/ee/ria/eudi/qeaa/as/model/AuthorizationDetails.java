@@ -1,5 +1,6 @@
 package ee.ria.eudi.qeaa.as.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class AuthorizationDetails {
     private String type;
     private String format;
     private String doctype;
+    @JsonProperty("credential_configuration_id")
     private String credentialConfigurationId;
     private List<String> locations;
 

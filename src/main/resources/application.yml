@@ -57,11 +57,12 @@ management:
 
 eudi:
   as:
-    base-url: https://eudi-as.localhost:12443
+    base-url: https://localhost:12443
     max-clock-skew: 5s
     dpop-expiry-time: 60s
     ttl:
       access-token: 365d
       request-uri: 60s
   wallet:
-    authorization-url: https://eudi-wallet.localhost:16443/authorize
+#    authorization-url: https://localhost:16443/authorize
+    authorization-url: haip://issue
